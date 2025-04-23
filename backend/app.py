@@ -3,6 +3,7 @@ import logging
 from flask import Flask, render_template, send_from_directory
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
+import asyncio
 
 from .models import init_db
 from .api import api

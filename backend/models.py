@@ -51,6 +51,18 @@ class Thread(Base):
             "last_check": self.last_check.isoformat() if self.last_check else None
         }
 
+class CallbackData(Base):
+    __tablename__ = 'callback_data'
+    
+    id = Column(Integer, primary_key=True)
+    callback_id = Column(String, nullable=False, unique=True, index=True)
+    data = Column(String, nullable=False)  # JSON serialized data
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False)
+    
+    def __repr__(self):
+        return f"<CallbackData(id={self.id}, callback_id='{self.callback_id}')>"
+
 def init_db(db_path='forum_tracker.db'):
     """Initialize the database and create tables"""
     engine = create_engine(f'sqlite:///{db_path}')

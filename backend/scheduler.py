@@ -40,6 +40,15 @@ class SchedulerService:
                 replace_existing=True
             )
             
+            # Schedule the cleanup task for expired callbacks
+            self.scheduler.add_job(
+                self.cleanup_expired_callbacks,
+                trigger=IntervalTrigger(seconds=86400),  # Une fois par jour
+                id='cleanup_expired_callbacks',
+                name='Clean up expired callback data',
+                replace_existing=True
+            )
+            
             self.scheduler.start()
             logger.info(f"Scheduler started with check interval of {self.check_interval_seconds} seconds")
     
@@ -64,7 +73,24 @@ class SchedulerService:
             
             for thread in threads:
                 self.check_thread(thread)
-    
+
+    def cleanup_expired_callbacks(self):
+        """Clean up expired callback data from the database"""
+        logger.info("Starting cleanup of expired callback data")
+        
+        try:
+            # Get database service
+            db_service = self.db_service
+            
+            # Clean up expired callbacks
+            deleted, error = db_service.cleanup_expired_callbacks()
+            
+            if error:
+                logger.error(f"Error cleaning up expired callbacks: {error}")
+            else:
+                logger.info(f"Cleaned up {deleted} expired callback records")
+        except Exception as e:
+            logger.error(f"Error in cleanup_expired_callbacks: {e}")
     
     def check_thread(self, thread: Thread) -> List[Dict[str, Any]]:
         """
